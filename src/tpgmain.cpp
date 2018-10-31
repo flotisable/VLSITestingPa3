@@ -9,7 +9,7 @@
 
 void usage(void);
 
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
   string inpFile, vetFile;
   int i, j;
   ATPG atpg; // create an ATPG obj, named atpg
