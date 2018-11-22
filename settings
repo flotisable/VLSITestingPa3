@@ -1,0 +1,24 @@
+archiveName := r06943085_pa3
+
+archiveFiles := \
+  src \
+  readme \
+  report.pdf
+
+reportCircuits := \
+  c432 \
+  c499 \
+  c880 \
+  c1355 \
+  c2670 \
+  c3540 \
+  c6288 \
+  c7552
+
+scriptInstallPath := ../Pa3
+
+scriptFiles := \
+  reportStatistic.perl \
+  settings \
+  makefile \
+  readmeScript.txt
