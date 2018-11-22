@@ -219,6 +219,10 @@ private:
   void display_undetect(void);
   void display_fault(fptr);
     
+  // helper functions for tdfsim
+  vector<fptr> tdf_simulate_v1( const string &pattern );
+  // end helper functions for tdfsim
+
   /* detail declaration of WIRE, NODE, and FAULT classes */
   class WIRE {
   public:
