@@ -4,3 +4,4 @@ src/atpg
 *.o
 tags
 Test
+*.vim
