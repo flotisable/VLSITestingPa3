@@ -18,6 +18,8 @@ void ATPG::transition_delay_fault_simulation()
   for( const string &pattern : vectors )
   {
      const vector<fptr> activated_faults = tdf_simulate_v1( pattern );
+
+     tdf_simulate_v2( pattern );
   }
 }
 
@@ -142,4 +144,11 @@ void ATPG::tdf_setup_pattern( const string &pattern )
      else
        wire->value = U;
   }
+}
+
+void ATPG::tdf_simulate_v2( const string &pattern )
+{
+  assert( pattern.size() == cktin.size() + 1 ); // precondition
+
+  tdf_setup_pattern( string{ 1, pattern.back() } + pattern.substr( 0, cktin.size() - 1 ) );
 }
