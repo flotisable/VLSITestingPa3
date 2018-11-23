@@ -14,7 +14,6 @@
 void ATPG::transition_delay_fault_simulation()
 {
   int total_detected_fault_num  = 0;
-  int total_fault_num           = distance( flist.begin(), flist.end() );
 
   tdf_generate_fault_list();
 
@@ -41,10 +40,10 @@ void ATPG::transition_delay_fault_simulation()
   }
   fprintf(  stdout, "# Result:\n" );
   fprintf(  stdout, "-----------------------\n" );
-  fprintf(  stdout, "# total transition delay faults: %d\n", total_fault_num );
+  fprintf(  stdout, "# total transition delay faults: %d\n", num_of_gate_fault );
   fprintf(  stdout, "# total detected faults: %d\n", total_detected_fault_num );
   fprintf(  stdout, "# fault coverage: %f %%\n",
-            static_cast<double>( total_detected_fault_num ) * 100 / total_fault_num );
+            static_cast<double>( total_detected_fault_num ) * 100 / num_of_gate_fault );
 }
 
 void ATPG::tdf_generate_fault_list()
