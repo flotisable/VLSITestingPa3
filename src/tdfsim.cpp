@@ -76,8 +76,8 @@ void ATPG::tdf_generate_fault( const wptr wire, short io, short fault_type )
     fault->node = wire->inode.front();
 
     ++num_of_gate_fault;
-    flist.push_front( move( fault ) );
     flist_undetect.push_front( fault.get() );
+    flist.push_front( move( fault ) );
   }
   else if( io == GI && wire->onode.size() > 1 )
   {
@@ -95,8 +95,8 @@ void ATPG::tdf_generate_fault( const wptr wire, short io, short fault_type )
             break;
           }
 
-       flist.push_front( move( fault_temp ) );
        flist_undetect.push_front( fault_temp.get() );
+       flist.push_front( move( fault_temp ) );
     }
     num_of_gate_fault += wire->onode.size();
   }
