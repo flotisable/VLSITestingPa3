@@ -13,21 +13,30 @@
 
 void ATPG::transition_delay_fault_simulation()
 {
+  int total_detected_fault_num = 0;
+
   tdf_generate_fault_list();
 
-  for( const string &pattern : vectors )
+  for( size_t i = vectors.size() - 1 ; i >= 0 ; --i )
   {
-     forward_list<fptr> activated_faults    = tdf_simulate_v1( pattern );
+     forward_list<fptr> activated_faults    = tdf_simulate_v1( vectors[i] );
      int                detected_fault_num;
 
      flist_undetect.swap( activated_faults );
 
-     tdf_simulate_v2( pattern, detected_fault_num );
+     tdf_simulate_v2( vectors[i], detected_fault_num );
 
      flist_undetect = move( activated_faults );
 
      flist_undetect.remove_if(  []( const fptr fault )
                                 { return ( fault->detect == TRUE ); } );
+
+     total_detected_fault_num += detected_fault_num;
+
+     fprintf( stdout, "vector[%lu] detects %d faults (%d)\n",
+              i, detected_fault_num, total_detected_fault_num );
+
+     if( i == 0 ) break;
   }
 }
 
