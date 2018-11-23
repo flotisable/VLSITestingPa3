@@ -223,6 +223,7 @@ private:
   void          tdf_generate_fault_list ();
   void          tdf_generate_fault      ( const wptr wire, short io, short fault_type );
   vector<fptr>  tdf_simulate_v1         ( const string &pattern );
+  void          tdf_setup_pattern       ( const string &pattern );
   // end helper functions for tdfsim
 
   /* detail declaration of WIRE, NODE, and FAULT classes */

@@ -92,23 +92,11 @@ void ATPG::tdf_generate_fault( const wptr wire, short io, short fault_type )
  */
 vector<ATPG::fptr> ATPG::tdf_simulate_v1( const string &pattern )
 {
+  assert( pattern.size() == cktin.size() + 1 ); // precondition
+
   vector<fptr> activated_faults;
 
-  // initialize circuit
-  for( size_t i = 0 ; i < sort_wlist.size() ; ++i )
-  {
-     wptr wire = sort_wlist[i];
-
-     if( i < cktin.size() ) // PI
-     {
-       wire->value  =   ctoi( pattern[i] );
-       wire->flag   |=  CHANGED;
-     }
-     else
-       wire->value = U;
-  }
-  // end initialize circuit
-
+  tdf_setup_pattern( pattern.substr( 0, cktin.size() ) );
   sim();
 
   // collect activated faults
@@ -136,4 +124,22 @@ vector<ATPG::fptr> ATPG::tdf_simulate_v1( const string &pattern )
   // end collect activated faults
 
   return activated_faults;
+}
+
+void ATPG::tdf_setup_pattern( const string &pattern )
+{
+  assert( pattern.size() == cktin.size() ); // precondition
+
+  for( size_t i = 0 ; i < sort_wlist.size() ; ++i )
+  {
+     wptr wire = sort_wlist[i];
+
+     if( i < cktin.size() ) // PI
+     {
+       wire->value  =   ctoi( pattern[i] );
+       wire->flag   |=  CHANGED;
+     }
+     else
+       wire->value = U;
+  }
 }
