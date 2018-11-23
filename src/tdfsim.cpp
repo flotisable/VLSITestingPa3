@@ -17,9 +17,17 @@ void ATPG::transition_delay_fault_simulation()
 
   for( const string &pattern : vectors )
   {
-     const vector<fptr> activated_faults = tdf_simulate_v1( pattern );
+     forward_list<fptr> activated_faults    = tdf_simulate_v1( pattern );
+     int                detected_fault_num;
 
-     tdf_simulate_v2( pattern );
+     flist_undetect.swap( activated_faults );
+
+     tdf_simulate_v2( pattern, detected_fault_num );
+
+     flist_undetect = move( activated_faults );
+
+     flist_undetect.remove_if(  []( const fptr fault )
+                                { return ( fault->detect == TRUE ); } );
   }
 }
 
@@ -92,11 +100,11 @@ void ATPG::tdf_generate_fault( const wptr wire, short io, short fault_type )
  *
  *    the activated fault list
  */
-vector<ATPG::fptr> ATPG::tdf_simulate_v1( const string &pattern )
+forward_list<ATPG::fptr> ATPG::tdf_simulate_v1( const string &pattern )
 {
   assert( pattern.size() == cktin.size() + 1 ); // precondition
 
-  vector<fptr> activated_faults;
+  forward_list<fptr> activated_faults;
 
   tdf_setup_pattern( pattern.substr( 0, cktin.size() ) );
   sim();
@@ -111,13 +119,13 @@ vector<ATPG::fptr> ATPG::tdf_simulate_v1( const string &pattern )
        case STR:
 
          if( wire->value == FALSE )
-           activated_faults.push_back( fault );
+           activated_faults.push_front( fault );
          break;
 
        case STF:
 
          if( wire->value == TRUE )
-           activated_faults.push_back( fault );
+           activated_faults.push_front( fault );
          break;
 
        default: break;
@@ -146,9 +154,12 @@ void ATPG::tdf_setup_pattern( const string &pattern )
   }
 }
 
-void ATPG::tdf_simulate_v2( const string &pattern )
+void ATPG::tdf_simulate_v2( const string &pattern, int &detected_fault_num  )
 {
   assert( pattern.size() == cktin.size() + 1 ); // precondition
 
-  tdf_setup_pattern( string{ 1, pattern.back() } + pattern.substr( 0, cktin.size() - 1 ) );
+  const string input_pattern =  string{ 1, pattern.back() } +
+                                pattern.substr( 0, cktin.size() - 1 );
+
+  fault_sim_a_vector( input_pattern, detected_fault_num );
 }

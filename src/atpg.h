@@ -220,11 +220,11 @@ private:
   void display_fault(fptr);
     
   // helper functions for tdfsim
-  void          tdf_generate_fault_list ();
-  void          tdf_generate_fault      ( const wptr wire, short io, short fault_type );
-  vector<fptr>  tdf_simulate_v1         ( const string &pattern );
-  void          tdf_setup_pattern       ( const string &pattern );
-  void          tdf_simulate_v2         ( const string &pattern );
+  void                tdf_generate_fault_list ();
+  void                tdf_generate_fault      ( const wptr wire, short io, short fault_type );
+  forward_list<fptr>  tdf_simulate_v1         ( const string &pattern );
+  void                tdf_setup_pattern       ( const string &pattern );
+  void                tdf_simulate_v2         ( const string &pattern, int &detected_fault_num );
   // end helper functions for tdfsim
 
   /* detail declaration of WIRE, NODE, and FAULT classes */
