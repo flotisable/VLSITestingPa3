@@ -60,13 +60,8 @@ void ATPG::tdf_generate_fault( const wptr wire, short io, short fault_type )
     flist.push_front( move( fault ) );
     flist_undetect.push_front( fault.get() );
   }
-  else // GI
+  else if( io == GI && wire->onode.size() > 1 )
   {
-    // preconditions
-    assert( io == GI );
-    assert( wire->onode.size() > 1 );
-    // end preconditions
-
     for( nptr node : wire->onode )
     {
        fptr_s fault_temp{ new FAULT };
