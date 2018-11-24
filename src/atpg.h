@@ -229,13 +229,19 @@ private:
                                   const vector<fptr>  &activated_faults,
                                   int                 &detected_fault_num );
 
-  void    tdf_init_fault_sim_wire   ();
-  size_t  tdf_add_fault_into_packet ( const fptr    fault,
-                                      vector<fptr>  &packet,
-                                      const size_t  start_wire_index,
-                                      const wptr    faulty_wire,
-                                      int           fault_type );
-  wptr    tdf_get_faulty_wire       ( const fptr    fault, int &fault_type );
+  void    tdf_init_fault_sim_wire     ();
+  bool    tdf_should_be_in_packet     ( const fptr    fault,
+                                        wptr          &faulty_wire,
+                                        int           &fault_type );
+  size_t  tdf_add_fault_into_packet   ( const fptr    fault,
+                                        vector<fptr>  &packet,
+                                        const size_t  start_wire_index,
+                                        const wptr    faulty_wire,
+                                        int           fault_type );
+  wptr    tdf_get_faulty_wire         ( const fptr    fault, int &fault_type );
+  void    tdf_fault_simulation        ( const size_t  start_wire_index );
+  int     tdf_faulty_wire_postprocess ( vector<fptr>  &fault_packet );
+  void    tdf_reset_faulty_wire       ( const wptr    faulty_wire );
   // end helper functions for tdfsim
 
   /* detail declaration of WIRE, NODE, and FAULT classes */
