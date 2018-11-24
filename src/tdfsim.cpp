@@ -8,9 +8,12 @@
 #include <cassert>
 #include <sstream>
 
-/* pack 16 faults into one packet.  simulate 16 faults togeter. 
+/* pack 16 faults into one packet.  simulate 16 faults togeter.
  * the following variable name is somewhat misleading */
 #define num_of_pattern 16
+
+inline int invert_fault_type( int fault_type )
+{ return ( fault_type == STR ) ? STF: STR; }
 
 void ATPG::transition_delay_fault_simulation()
 {
@@ -20,14 +23,10 @@ void ATPG::transition_delay_fault_simulation()
 
   for( size_t i = vectors.size() - 1 ; i >= 0 ; --i )
   {
-     forward_list<fptr> activated_faults    = tdf_simulate_v1( vectors[i] );
-     int                detected_fault_num;
+     vector<fptr> activated_faults    = tdf_simulate_v1( vectors[i] );
+     int          detected_fault_num;
 
-     flist_undetect.swap( activated_faults );
-
-     tdf_simulate_v2( vectors[i], detected_fault_num );
-
-     flist_undetect = move( activated_faults );
+     tdf_simulate_v2( vectors[i], activated_faults, detected_fault_num );
 
      flist_undetect.remove_if(  []( const fptr fault )
                                 { return ( fault->detect == TRUE ); } );
@@ -116,11 +115,11 @@ void ATPG::tdf_generate_fault( const wptr wire, short io, short fault_type )
  *
  *    the activated fault list
  */
-forward_list<ATPG::fptr> ATPG::tdf_simulate_v1( const string &pattern )
+vector<ATPG::fptr> ATPG::tdf_simulate_v1( const string &pattern )
 {
   assert( pattern.size() == cktin.size() + 1 ); // precondition
 
-  forward_list<fptr> activated_faults;
+  vector<fptr> activated_faults;
 
   tdf_setup_pattern( pattern.substr( 0, cktin.size() ) );
   sim();
@@ -135,13 +134,13 @@ forward_list<ATPG::fptr> ATPG::tdf_simulate_v1( const string &pattern )
        case STR:
 
          if( wire->value == FALSE )
-           activated_faults.push_front( fault );
+           activated_faults.push_back( fault );
          break;
 
        case STF:
 
          if( wire->value == TRUE )
-           activated_faults.push_front( fault );
+           activated_faults.push_back( fault );
          break;
 
        default: break;
@@ -170,13 +169,194 @@ void ATPG::tdf_setup_pattern( const string &pattern )
   }
 }
 
-void ATPG::tdf_simulate_v2( const string &pattern, int &detected_fault_num  )
+void ATPG::tdf_simulate_v2( const string        &pattern,
+                            const vector<fptr>  &activated_faults,
+                            int                 &detected_fault_num  )
 {
   assert( pattern.size() == cktin.size() + 1 ); // precondition
 
   ostringstream input_pattern;
+  vector<fptr>  fault_packet;
+  size_t        start_wire_index = sort_wlist.size();
 
   input_pattern << pattern.back() << pattern.substr( 0, cktin.size() - 1 );
 
-  fault_sim_a_vector( input_pattern.str(), detected_fault_num );
+  fault_packet.reserve( num_of_pattern );
+  detected_fault_num = 0;
+
+  tdf_setup_pattern( input_pattern.str() );
+  sim();
+  tdf_init_fault_sim_wire();
+
+  for( size_t i = 0 ; i < activated_faults.size() ; ++i )
+  {
+     fptr fault       = activated_faults[i];
+     wptr faulty_wire = sort_wlist[fault->to_swlist];
+     int  fault_type  = fault->fault_type;
+
+     if( fault_type == faulty_wire->value ) continue;
+
+     if(  fault->node->type == OUTPUT )
+     {
+       fault->detect = TRUE;
+       continue;
+     }
+
+     if     ( fault->io == GO )
+     {
+       if( faulty_wire->flag & OUTPUT )
+       {
+         fault->detect = TRUE;
+         continue;
+       }
+     }
+     else if( fault->io == GI )
+     {
+       faulty_wire = tdf_get_faulty_wire( fault, fault_type );
+
+       if( !faulty_wire ) continue;
+
+       if( faulty_wire->flag & OUTPUT )
+       {
+         fault->detect = TRUE;
+         continue;
+       }
+     }
+
+     start_wire_index = tdf_add_fault_into_packet( fault,
+                                                   fault_packet,
+                                                   start_wire_index,
+                                                   faulty_wire,
+                                                   fault_type );
+
+    if( fault_packet.size() == num_of_pattern || i + 1 == activated_faults.size() )
+    {
+      for( size_t i = start_wire_index ; i < sort_wlist.size() ; ++i )
+      {
+         wptr wire = sort_wlist[i];
+
+         if( wire->flag & SCHEDULED )
+         {
+           wire->flag &= ~SCHEDULED;
+           fault_sim_evaluate( wire );
+         }
+      }
+
+      while( !wlist_faulty.empty() )
+      {
+        wptr wire = wlist_faulty.front();
+
+        wlist_faulty.pop_front();
+
+        wire->flag        &= ~FAULTY;
+        wire->flag        &= ~FAULT_INJECTED;
+        wire->fault_flag  &= ALL_ZERO;
+
+        if( wire->flag & OUTPUT )
+        {
+          for( size_t i = 0 ; i < fault_packet.size() ; ++i )
+          {
+             if( fault_packet[i]->detect ) continue;
+             if( ( ( wire->wire_value1 ^ wire->wire_value2  ) & Mask[i] ) &&
+                 ( ( wire->wire_value1 ^ Unknown[i]         ) & Mask[i] ) &&
+                 ( ( wire->wire_value2 ^ Unknown[i]         ) & Mask[i] ) )
+             {
+               fault_packet[i]->detect = TRUE;
+               ++detected_fault_num;
+             }
+          }
+        }
+        wire->wire_value2 = wire->wire_value1;
+      }
+      fault_packet.clear();
+      start_wire_index = sort_wlist.size();
+    }
+  }
+}
+
+void ATPG::tdf_init_fault_sim_wire()
+{
+  for( wptr wire : sort_wlist )
+  {
+    switch( wire->value )
+    {
+      case TRUE:
+
+        wire->wire_value1 = wire->wire_value2 = ALL_ONE;
+        break;
+
+      case FALSE:
+
+        wire->wire_value1 = wire->wire_value2 = ALL_ZERO;
+        break;
+
+      case U:
+      default:
+
+        wire->wire_value1 = wire->wire_value2 = 0x55555555;
+        break;
+    }
+  }
+}
+
+/*!
+ *  Add **fault** into **packet**.
+ *  **packet** will be modified.
+ *
+ *  \return the updated **start_wire_index**
+ */
+size_t ATPG::tdf_add_fault_into_packet(
+  const fptr    fault,
+  vector<fptr>  &packet,
+  const size_t  start_wire_index,
+  const wptr    faulty_wire,
+  int           fault_type )
+{
+  if( !( faulty_wire->flag & FAULTY ) )
+  {
+    faulty_wire->flag |= FAULTY;
+    wlist_faulty.push_front( faulty_wire );
+  }
+
+  inject_fault_value( faulty_wire, static_cast<int>( packet.size() ),
+                      fault_type );
+  faulty_wire->flag |= FAULT_INJECTED;
+
+  for( nptr node : faulty_wire->onode )
+     node->owire.front()->flag |= SCHEDULED;
+
+  packet.push_back( fault );
+
+  return min( start_wire_index, static_cast<size_t>( fault->to_swlist ) );
+}
+
+ATPG::wptr ATPG::tdf_get_faulty_wire( const fptr fault, int &fault_type )
+{
+  nptr  node = fault->node;
+  int   type = node->type;
+
+  if( type == NOT || type == NAND || type == NOR || type == EQV )
+    fault_type = invert_fault_type( fault->fault_type );
+  else
+    fault_type = fault->fault_type;
+
+  for( const wptr wire : node->iwire )
+  {
+     if( wire == sort_wlist[fault->to_swlist] ) continue;
+
+     if     ( type == AND || type == NAND )
+     {
+       if( wire->value != TRUE ) return nullptr;
+     }
+     else if( type == OR || type == NOR )
+     {
+       if( wire->value != FALSE ) return nullptr;
+     }
+     else if( type == XOR || type == EQV )
+     {
+       if( wire->value == TRUE )
+         fault_type = invert_fault_type( fault_type );
+     }
+  }
+  return node->owire.front();
 }
