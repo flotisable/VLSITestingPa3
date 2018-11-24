@@ -26,7 +26,6 @@ test: ${testDir} ${srcDir}/${PROG}
 		pattern=${patternDir}/$${circuit}.pat; \
 		goldenLog=${testDir}/golden_$${circuit}.log; \
 		log=${testDir}/$${circuit}.log; \
-		./${binDir}/${goldenProgram} -ndet 1 -tdfsim $${pattern} $${circuitFull} >& $${goldenLog}; \
 		./${srcDir}/${PROG} -tdfsim $${pattern} $${circuitFull} >& $${log}; \
 		diff -y --suppress-common-lines $${goldenLog} $${log}; \
 		if [ !$$? ]; then \
