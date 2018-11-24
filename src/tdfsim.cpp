@@ -23,10 +23,9 @@ void ATPG::transition_delay_fault_simulation()
 
   for( size_t i = vectors.size() - 1 ; i >= 0 ; --i )
   {
-     vector<fptr> activated_faults    = tdf_simulate_v1( vectors[i] );
-     int          detected_fault_num;
-
-     tdf_simulate_v2( vectors[i], activated_faults, detected_fault_num );
+     vector<fptr> activated_faults    = tdf_simulate_v1(  vectors[i] );
+     int          detected_fault_num  = tdf_simulate_v2(  vectors[i],
+                                                          activated_faults );
 
      flist_undetect.remove_if(  []( const fptr fault )
                                 { return ( fault->detect == TRUE ); } );
@@ -169,20 +168,19 @@ void ATPG::tdf_setup_pattern( const string &pattern )
   }
 }
 
-void ATPG::tdf_simulate_v2( const string        &pattern,
-                            const vector<fptr>  &activated_faults,
-                            int                 &detected_fault_num  )
+int ATPG::tdf_simulate_v2(  const string        &pattern,
+                            const vector<fptr>  &activated_faults )
 {
   assert( pattern.size() == cktin.size() + 1 ); // precondition
 
   ostringstream input_pattern;
   vector<fptr>  fault_packet;
-  size_t        start_wire_index = sort_wlist.size();
+  size_t        start_wire_index    = sort_wlist.size();
+  int           detected_fault_num  = 0;
 
   input_pattern << pattern.back() << pattern.substr( 0, cktin.size() - 1 );
 
   fault_packet.reserve( num_of_pattern );
-  detected_fault_num = 0;
 
   tdf_setup_pattern( input_pattern.str() );
   sim();
@@ -212,6 +210,7 @@ void ATPG::tdf_simulate_v2( const string        &pattern,
        fault_packet.clear();
      }
   }
+  return detected_fault_num;
 }
 
 void ATPG::tdf_init_fault_sim_wire()
@@ -359,7 +358,7 @@ void ATPG::tdf_fault_simulation( const size_t start_wire_index )
   }
 }
 
-int ATPG::tdf_faulty_wire_postprocess( vector<fptr>  &fault_packet )
+int ATPG::tdf_faulty_wire_postprocess( vector<fptr> &fault_packet )
 {
   int detected_fault_num = 0;
 

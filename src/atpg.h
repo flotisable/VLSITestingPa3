@@ -223,11 +223,10 @@ private:
   void tdf_generate_fault_list();
   void tdf_generate_fault( const wptr wire, short io, short fault_type );
 
-  vector<fptr> tdf_simulate_v1  ( const string        &pattern );
-  void         tdf_setup_pattern( const string        &pattern );
-  void         tdf_simulate_v2  ( const string        &pattern,
-                                  const vector<fptr>  &activated_faults,
-                                  int                 &detected_fault_num );
+  vector<fptr>  tdf_simulate_v1   ( const string        &pattern );
+  void          tdf_setup_pattern ( const string        &pattern );
+  int           tdf_simulate_v2   ( const string        &pattern,
+                                    const vector<fptr>  &activated_faults );
 
   void    tdf_init_fault_sim_wire     ();
   bool    tdf_should_be_in_packet     ( const fptr    fault,
