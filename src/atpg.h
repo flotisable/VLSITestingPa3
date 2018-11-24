@@ -225,7 +225,7 @@ private:
 
   vector<fptr>  tdf_simulate_v1   ( const string        &pattern );
   void          tdf_setup_pattern ( const string        &pattern );
-  int           tdf_simulate_v2   ( const string        &pattern,
+  void          tdf_simulate_v2   ( const string        &pattern,
                                     const vector<fptr>  &activated_faults );
 
   void    tdf_init_fault_sim_wire     ();
@@ -239,7 +239,7 @@ private:
                                         int           fault_type );
   wptr    tdf_get_faulty_wire         ( const fptr    fault, int &fault_type );
   void    tdf_fault_simulation        ( const size_t  start_wire_index );
-  int     tdf_faulty_wire_postprocess ( vector<fptr>  &fault_packet );
+  void    tdf_faulty_wire_postprocess ( vector<fptr>  &fault_packet );
   void    tdf_reset_faulty_wire       ( const wptr    faulty_wire );
   // end helper functions for tdfsim
 
