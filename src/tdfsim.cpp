@@ -6,6 +6,7 @@
 #include "atpg.h"
 
 #include <cassert>
+#include <sstream>
 
 /* pack 16 faults into one packet.  simulate 16 faults togeter. 
  * the following variable name is somewhat misleading */
@@ -173,8 +174,9 @@ void ATPG::tdf_simulate_v2( const string &pattern, int &detected_fault_num  )
 {
   assert( pattern.size() == cktin.size() + 1 ); // precondition
 
-  const string input_pattern =  string{ 1, pattern.back() } +
-                                pattern.substr( 0, cktin.size() - 1 );
+  ostringstream input_pattern;
 
-  fault_sim_a_vector( input_pattern, detected_fault_num );
+  input_pattern << pattern.back() << pattern.substr( 0, cktin.size() - 1 );
+
+  fault_sim_a_vector( input_pattern.str(), detected_fault_num );
 }
