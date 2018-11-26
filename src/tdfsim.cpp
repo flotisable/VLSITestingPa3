@@ -193,9 +193,8 @@ void ATPG::tdf_simulate_v2( const string        &pattern,
   sim();
   tdf_init_fault_sim_wire();
 
-  for( size_t i = 0 ; i < activated_faults.size() ; ++i )
+  for( fptr fault : activated_faults )
   {
-     fptr fault         = activated_faults[i];
      wptr faulty_wire;
      int  fault_type;
 
@@ -207,8 +206,7 @@ void ATPG::tdf_simulate_v2( const string        &pattern,
                                                    faulty_wire,
                                                    fault_type );
 
-     if(  fault_packet.size() == num_of_pattern ||
-          i + 1 == activated_faults.size() )
+     if( fault_packet.size() == num_of_pattern )
      {
        tdf_fault_simulation( start_wire_index );
        tdf_faulty_wire_postprocess( fault_packet );
@@ -216,6 +214,12 @@ void ATPG::tdf_simulate_v2( const string        &pattern,
        fault_packet.clear();
        start_wire_index = sort_wlist.size();
      }
+  }
+
+  if( !fault_packet.empty() )
+  {
+    tdf_fault_simulation( start_wire_index );
+    tdf_faulty_wire_postprocess( fault_packet );
   }
 }
 
