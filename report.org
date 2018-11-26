@@ -48,3 +48,11 @@
       針對這部份稍做調整。
       #+INCLUDE: "./src/tdfsim.cpp" src C++ :lines "329-356" -n 329
 * 如何產生 fault list 與為何不能 collapse
+  關於產生 fault list，請看 [[*%E7%94%A2%E7%94%9F fault list]] 的敘述。
+  至於為何不能使用 fault collapse，就算兩個 fault 在 stuck-at fault 是 equivalent。
+  這兩個 fault 在 transition delay fault activate 的條件卻不一定 equivalent。
+  比如 AND gate input 跟 output 的 STR fault，在 stuck-at 0 fault 是 equivalent。
+  但 activate input 的 fault 要 input 為 0，
+  而要 activate output 的 fault 只要其中一個 input 為 0 即可。
+  而且如果考慮 gate delay，
+  那麼一個 gate 的 input 跟 output transition delay fault 造成的結果可能不同。
