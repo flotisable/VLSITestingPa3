@@ -20,4 +20,31 @@
   |   | c6288   |      4800 |      17376 |           16532 |               844 | 95.142726 %      |
   |   | c7552   |      5679 |      19456 |           17421 |              2035 | 89.540502 %      |
 * 程式碼
+** 主要函式
+   先產生 fault list，再依序餵 input pattern。
+   餵進 V1 後產生 activated 的 fault list。
+   再對 activated fault list 作 V2 的 fault simulation。
+   最後進行 fault droping。
+   #+INCLUDE: "./src/tdfsim.cpp" src C++ :lines "20-48" -n 20
+** 產生 fault list
+   針對每條 wire 產生對應的 trandition delay fault。
+   #+INCLUDE: "./src/tdfsim.cpp" src C++ :lines "59-75" -n 59
+   每條 wire 如果是 gate 的 output 就直接產生 fault。
+   如果是 gate 的 input，則要看有沒有 fanout branch。
+   如果有的話就要產生 fault。
+   #+INCLUDE: "./src/tdfsim.cpp" src C++ :lines "79-117" -n 79
+** 處理 V1
+   取 *vectors* 前 input 數作為 V1，並做 simulation。
+   根據不同的 fault type，判斷 fault 有沒有被 activated。
+   #+INCLUDE: "./src/tdfsim.cpp" src C++ :lines "130-160" -n 130
+** 處理 V2
+   取 *vectors* 最後一個值作為 V2 的第一個值，其他 input 為 V1 捨去最後一個值。
+   接著做 fault simulation。
+   與 stuck-at fault 的 fault simulation 有兩點不同
+   1. 只針對從 V1 得到的 activated fault list 做 fault simulation。
+      #+INCLUDE: "./src/tdfsim.cpp" src C++ :lines "185-225" -n 185
+   2. 原本 fault simulation 預設有 fault dropping，
+      所以在取 faulty wire 時不處理 fault 在 BUF、NOT input 的狀況。
+      針對這部份稍做調整。
+      #+INCLUDE: "./src/tdfsim.cpp" src C++ :lines "329-356" -n 329
 * 如何產生 fault list 與為何不能 collapse
