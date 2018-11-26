@@ -45,6 +45,7 @@ void ATPG::transition_delay_fault_simulation()
 
      if( i == 0 ) break;
   }
+  fprintf(  stdout, "\n" );
   fprintf(  stdout, "# Result:\n" );
   fprintf(  stdout, "-----------------------\n" );
   fprintf(  stdout, "# total transition delay faults: %d\n", num_of_gate_fault );
