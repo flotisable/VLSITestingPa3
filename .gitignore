@@ -5,3 +5,5 @@ src/atpg
 tags
 Test
 *.vim
+report.pdf
+*.tex

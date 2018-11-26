@@ -1,0 +1,11 @@
+# -*- org-use-sub-superscripts: {}; org-export-with-sub-superscripts: {}; -*-
+#+TITLE: VLSI Tesing PA3 Report
+#+AUTHOR: r06943085 黃韋智
+#+OPTIONS: toc:nil
+#+LATEX_HEADER: \usepackage{CJKutf8}
+#+LATEX_HEADER: \AtBeginDocument{ \begin{CJK}{UTF8}{bkai} }
+#+LATEX_HEADER: \AtEndDocument{ \end{CJK} }
+
+* 表格
+* 程式碼
+* 如何產生 fault list 與為何不能 collapse
