@@ -28,7 +28,7 @@ test: ${testDir} ${srcDir}/${PROG}
 		log=${testDir}/$${circuit}.log; \
 		./${srcDir}/${PROG} -tdfsim $${pattern} $${circuitFull} >& $${log}; \
 		diff -y --suppress-common-lines $${goldenLog} $${log}; \
-		if [ !$$? ]; then \
+		if [ "$$?" != "0" ]; then \
 			echo "$${circuit} is not the same as golden result!"; \
 		fi \
 	done
