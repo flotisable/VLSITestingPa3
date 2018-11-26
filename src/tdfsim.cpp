@@ -62,12 +62,12 @@ void ATPG::tdf_generate_fault_list()
   flist_undetect.clear();
   num_of_gate_fault = 0;
 
-  for( auto it = sort_wlist.crbegin() ; it != sort_wlist.crend() ; ++it )
+  for( wptr wire : sort_wlist )
   {
-     tdf_generate_fault( *it, GO, STR );
-     tdf_generate_fault( *it, GO, STF );
-     tdf_generate_fault( *it, GI, STR );
-     tdf_generate_fault( *it, GI, STF );
+     tdf_generate_fault( wire, GO, STR );
+     tdf_generate_fault( wire, GO, STF );
+     tdf_generate_fault( wire, GI, STR );
+     tdf_generate_fault( wire, GI, STF );
   }
 
   for( fptr fault : flist_undetect )
