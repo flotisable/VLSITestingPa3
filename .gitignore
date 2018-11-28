@@ -7,3 +7,5 @@ Test
 *.vim
 report.pdf
 *.tex
+r06943085*
+*.tgz
